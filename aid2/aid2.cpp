@@ -11,8 +11,8 @@ using namespace std;
 using namespace aid2;
 static future<void> gfutListen;
 static CFRunLoopRef grunLoop;
-static ConnectCallbackFunc ConnectCallback = nullptr; // ¡¨Ω”ªÿµ˜÷∏’Î∫Ø ˝÷∏’Î±‰¡ø
-static DisconnectCallbackFunc  DisconnectCallback = nullptr; // ∂œø™¡¨Ω”ªÿµ˜∫Ø ˝÷∏’Î±‰¡ø
+static ConnectCallbackFunc ConnectCallback = nullptr; // ËøûÊé•ÂõûË∞ÉÊåáÈíàÂáΩÊï∞ÊåáÈíàÂèòÈáè
+static DisconnectCallbackFunc  DisconnectCallback = nullptr; // Êñ≠ÂºÄËøûÊé•ÂõûË∞ÉÂáΩÊï∞ÊåáÈíàÂèòÈáè
 static string strAidservUrl;
 static string strRootCert;
 static string strClientKey;
@@ -32,8 +32,8 @@ void device_notification_callback(struct AMDeviceNotificationCallbackInformation
 				DeviceManager::add_device(udid, deviceHandle);
 				logger.log("Start Device.");
 				logger.log("Device %p connected,udid:%s", deviceHandle, udid.c_str());
-				// ¡¨Ω”ªÿµ˜
-				if (ConnectCallback) { // ¡¨Ω”ªÿµ˜
+				// ËøûÊé•ÂõûË∞É
+				if (ConnectCallback) { // ËøûÊé•ÂõûË∞É
 					auto appleInfo = DeviceManager::get_device(deviceHandle);
 					ConnectCallback(udid.c_str(),
 						appleInfo->DeviceName().c_str(),
@@ -64,7 +64,7 @@ void device_notification_callback(struct AMDeviceNotificationCallbackInformation
 	}
 	else
 	{
-		logger.log("≤ª¥¶¿ÌUSB“‘Õ‚¡¨Ω”…Ë±∏ %p Ω¯––connect.", deviceHandle);
+		logger.log("Do not process connections other than USB using %p.", deviceHandle);
 	}
 
 }
@@ -108,10 +108,10 @@ bool StopListen()
 	return true;
 }
 
-AuthorizeReturnStatus AuthorizeDevice(const char* udid) {
+AuthorizeReturnStatus AuthorizeDevice(const char* udid, long long dsid) {
 	auto retDoPair = DoPair(udid);
 	if (retDoPair) {
-		if (retDoPair<0) logger.log("–≈»œ ß∞‹ªÚ√ª”–Õ®π˝°£");
+		if (retDoPair<0) logger.log("The acceptance failed or was not approved.");
 		return (AuthorizeReturnStatus)retDoPair;
 	};
 
@@ -127,47 +127,47 @@ AuthorizeReturnStatus AuthorizeDevice(const char* udid) {
 
 	try
 	{
-		ATH ath = ATH(udid);  //new≥ˆÕ¨≤Ω µ¿˝
+		ATH ath = ATH(udid);  //newÂá∫ÂêåÊ≠•ÂÆû‰æã
 
-		if (!client->GenerateGrappa(remote_grappa))  //Grappa ˝æ›…˙≥…
+		if (!client->GenerateGrappa(remote_grappa))  //GrappaÊï∞ÊçÆÁîüÊàê
 		{
 			logger.log("udid:%s,RemoteGetGrappa failed.", udid);
 			return AuthorizeReturnStatus::AuthorizeFailed;
 		}
 		logger.log("udid:%s,RemoteGetGrappa success.", udid);
 
-		if (!ath.SyncAllowed()) {  //‘ –ÌÕ¨≤Ω
+		if (!ath.SyncAllowed()) {  //ÂÖÅËÆ∏ÂêåÊ≠•
 			logger.log("udid:%s,SyncAllowed message read failed.", udid);
 			return AuthorizeReturnStatus::AuthorizeFailed;
 		}
 		logger.log("udid:%s,SyncAllowed message read success.", udid);
 
-		//«Î«Û…˙≥…Õ¨≤Ω–≈œ¢
+		//ËØ∑Ê±ÇÁîüÊàêÂêåÊ≠•‰ø°ÊÅØ
 		if (!ath.RequestingSync(remote_grappa)) {
 			logger.log("udid:%s,RequestingSync failed.", udid);
 			return AuthorizeReturnStatus::AuthorizeFailed;
 		};
 		logger.log("udid:%s,RequestingSync success.", udid);
-		// ªÒ»°«Î«ÛÕ¨≤Ω◊¥Ã¨ ˝æ›
+		// Ëé∑ÂèñËØ∑Ê±ÇÂêåÊ≠•Áä∂ÊÄÅÊï∞ÊçÆ
 		if (!ath.ReadyForSync(grappa)) {
 			logger.log("udid:%s,ReadyForSync message read failed.\n", udid);
 			return AuthorizeReturnStatus::AuthorizeFailed;
 		}
 		logger.log("udid:%s,ReadyForSync message read success.", udid);
-		if (!client->GenerateRs(grappa))	//µ˜”√‘∂≥Ã∑˛ŒÒ∆˜÷∏¡Ó…˙≥…afsync.rs∫Õafsync.rs.sigŒƒº˛
+		if (!client->GenerateRs(grappa, dsid))	//Ë∞ÉÁî®ËøúÁ®ãÊúçÂä°Âô®Êåá‰ª§ÁîüÊàêafsync.rsÂíåafsync.rs.sigÊñá‰ª∂
 		{
 			logger.log("udid:%s,GenerateRs failed.", udid);
 			return AuthorizeReturnStatus::AuthorizeFailed;
 		}
 		logger.log("udid:%s,GenerateRs success.", udid);
-		//ƒ£ƒ‚itunesÕÍ≥…Õ¨≤Ω÷∏¡Ó
+		//Ê®°ÊãüitunesÂÆåÊàêÂêåÊ≠•Êåá‰ª§
 		if (!ath.FinishedSyncingMetadata())
 		{
 			logger.log("udid:%s,FinishedSyncingMetadata failed.", udid);
 			return AuthorizeReturnStatus::AuthorizeFailed;
 		}
 		logger.log("udid:%s,FinishedSyncingMetadata success.", udid);
-		//∂¡»°Õ¨≤Ω◊¥Ã¨
+		//ËØªÂèñÂêåÊ≠•Áä∂ÊÄÅ
 		if (!ath.SyncFinished())
 		{
 			logger.log("udid:%s,SyncFinished message read SyncFailed.", udid);
@@ -187,7 +187,7 @@ int DoPair(const char* udid)
 {
 	auto appleInfo = DeviceManager::get_device(udid);
 	if (appleInfo == nullptr) {
-		logger.log("…Ë±∏√ª”–≤Â»Î£¨≥ı ºªØ ß∞‹°£");
+		logger.log("The device was not inserted; initialization failed.");
 		return AuthorizeReturnStatus::AuthorizeFailed;
 	}
 	return appleInfo->DoPair();
@@ -196,7 +196,7 @@ int DoPair(const char* udid)
 bool InstallApplication(const char* udid, const char* ipaPath) {
 	auto retDoPair = DoPair(udid);
 	if (retDoPair) {
-		if (retDoPair < 0) logger.log("–≈»œ ß∞‹ªÚ√ª”–Õ®π˝°£");
+		if (retDoPair < 0) logger.log("The acceptance failed or was not approved.");
 		return false;
 	};
 	iOSApplication iosapp = iOSApplication((AMDeviceRef)DeviceManager::get_handle(udid));
@@ -207,7 +207,7 @@ bool InstallApplication(const char* udid, const char* ipaPath) {
 }
 
 
-//◊¢≤·∞≤◊∞ªÿµ˜∫Ø ˝£¨ ⁄»®π˝≥Ã÷––Ë“™≈‰∂‘–≈œ¢∫Õ ⁄»®Ω·π˚Õ®π˝ªÿµ˜∫Ø ˝Õ®÷™
+//Ê≥®ÂÜåÂÆâË£ÖÂõûË∞ÉÂáΩÊï∞ÔºåÊéàÊùÉËøáÁ®ã‰∏≠ÈúÄË¶ÅÈÖçÂØπ‰ø°ÊÅØÂíåÊéàÊùÉÁªìÊûúÈÄöËøáÂõûË∞ÉÂáΩÊï∞ÈÄöÁü•
 void RegisterInstallCallback(InstallApplicationFunc callback) {
 	iOSApplication::InstallCallback = callback;
 }
@@ -220,4 +220,15 @@ void RegisterConnectCallback(ConnectCallbackFunc callback)
 void RegisterDisconnectCallback(DisconnectCallbackFunc callback)
 {
 	DisconnectCallback = callback;
+}
+
+bool PushAuthorizeInfo(long long dsid) {
+	std::unique_ptr<RemoteAuth> client;
+	if (strRootCert.empty())
+		client = std::make_unique<RemoteAuth>(strAidservUrl, "");
+	else if (strClientCert.empty())
+		client = std::make_unique<RemoteAuth>(strAidservUrl, "", strRootCert);
+	else
+		client = std::make_unique<RemoteAuth>(strAidservUrl, "", strRootCert, strClientCert, strClientKey);
+	return client->PushAuthorizeInfo(dsid);
 }

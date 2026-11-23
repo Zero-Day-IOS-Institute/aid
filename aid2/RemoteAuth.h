@@ -9,32 +9,32 @@ namespace aid2 {
 	{
 	public:
 		/**
-		 * ¹¹ÔìRemoteAuth
+		 * æ„é€ RemoteAuth
 		 *
-		 * @param url ¸ñÊ½Îª£ºschema://host:port
-		 * @udid Á¬½ÓÊÖ»úudid
+		 * @param url æ ¼å¼ä¸ºï¼šschema://host:port
+		 * @udid è¿æ¥æ‰‹æœºudid
 		 */
 		RemoteAuth(const string& url, const std::string& udid);
 
 		/**
-		 * ¹¹ÔìRemoteAuth
+		 * æ„é€ RemoteAuth
 		 *
-		 * @param url ¸ñÊ½Îª£ºschema://host:port
-		 * @udid Á¬½ÓÊÖ»úudid
-		 * @rootcert ¸ùÖ¤Êé
+		 * @param url æ ¼å¼ä¸ºï¼šschema://host:port
+		 * @udid è¿æ¥æ‰‹æœºudid
+		 * @rootcert æ ¹è¯ä¹¦
 		 */
 		RemoteAuth(const string& url, 
 			const std::string& udid,
 			const string& rootcert);
 		
 		/**
-		 * ¹¹ÔìRemoteAuth
+		 * æ„é€ RemoteAuth
 		 *
-		 * @param url ¸ñÊ½Îª£ºschema://host:port
-		 * @udid Á¬½ÓÊÖ»úudid
-		 * @rootcert ¸ùÖ¤Êé
-		 * @client_cert_path clientÖ¤ÊéÂ·¾¶
-		 * @client_key_path clientÖ¤ÊéÃÜÔ¿
+		 * @param url æ ¼å¼ä¸ºï¼šschema://host:port
+		 * @udid è¿æ¥æ‰‹æœºudid
+		 * @rootcert æ ¹è¯ä¹¦
+		 * @client_cert_path clientè¯ä¹¦è·¯å¾„
+		 * @client_key_path clientè¯ä¹¦å¯†é’¥
 		 */
 		RemoteAuth(const string& url, 
 			const std::string& udid,
@@ -45,19 +45,27 @@ namespace aid2 {
 		~RemoteAuth();
 
 		/**
-		 * Éú³ÉGrappa
+		 * ç”ŸæˆGrappa
 		 *
-		 * @param grappa Êä³ö²ÎÊı£¬grappa²ÎÊı
-		 * @return ¶ÁÈ¡µ½Îªtrue,·ñÔòÎªflase
+		 * @param grappa è¾“å‡ºå‚æ•°ï¼Œgrappaå‚æ•°
+		 * @return è¯»å–åˆ°ä¸ºtrue,å¦åˆ™ä¸ºflase
 		 */
 		bool GenerateGrappa(string& grappa);
 		/**
-		 * Éú³ÉGrappa afsync.rsºÍafsync.rs.sig ÎÄ¼şĞÅÏ¢
+		 * ç”ŸæˆGrappa afsync.rså’Œafsync.rs.sig æ–‡ä»¶ä¿¡æ¯
 		 *
-		 * @param grappa ÊäÈë²ÎÊı£¬grappa²ÎÊı
-		 * @return ³É¹¦Îªtrue,·ñÔòÎªflase
+		 * @param grappa è¾“å…¥å‚æ•°ï¼Œgrappaå‚æ•°
+		 * @param dsid è¾“å…¥å‚æ•°ï¼Œdsid
+		 * @return æˆåŠŸä¸ºtrue,å¦åˆ™ä¸ºflase
 		 */
-		bool GenerateRs(const string& grappa);
+		bool GenerateRs(const string& grappa, long long dsid);
+		/**
+		 * ä¸Šä¼ ç¡¬ä»¶ä¿¡æ¯å’Œæˆæƒæ–‡ä»¶åˆ°æœåŠ¡å™¨
+		 *
+		 * @param dsid è¾“å…¥å‚æ•°ï¼ŒApple ID çš„ dsid
+		 * @return æˆåŠŸä¸ºtrue,å¦åˆ™ä¸ºfalse
+		 */
+		bool PushAuthorizeInfo(long long dsid);
 	private:
 		std::string m_udid;
 		unsigned long m_grappa_session_id = 0;  // grappa session id
